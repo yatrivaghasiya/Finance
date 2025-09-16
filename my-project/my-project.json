@@ -1,0 +1,8 @@
+{
+  "name": "my-project",
+  "version": "1.0.0",
+  "main": "use-local-storage.ts",
+  "scripts": {
+    "start": "node use-local-storage.ts"
+  }
+}
