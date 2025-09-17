@@ -4,8 +4,8 @@ import { Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { AuthProvider } from "@/components/auth-provider"
 import { ThemeProvider } from "@/components/theme-provider"
-import { Suspense } from "react"
 import "./globals.css"
+import { Suspense } from "react"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,7 +27,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange={false}>
-          <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+          <Suspense fallback={<div>Loading...</div>}>
             <AuthProvider>{children}</AuthProvider>
           </Suspense>
         </ThemeProvider>

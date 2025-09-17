@@ -24,18 +24,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    try {
-      const authStatus = localStorage.getItem("financeAppAuth")
-      const userData = localStorage.getItem("financeAppUser")
-      if (authStatus === "true" && userData) {
-        setIsAuthenticated(true)
-        setUser(JSON.parse(userData))
+    const checkAuth = () => {
+      try {
+        if (typeof window !== "undefined") {
+          const authStatus = localStorage.getItem("financeAppAuth")
+          const userData = localStorage.getItem("financeAppUser")
+          if (authStatus === "true" && userData) {
+            setIsAuthenticated(true)
+            setUser(JSON.parse(userData))
+          }
+        }
+      } catch (error) {
+        console.error("Error reading from localStorage:", error)
+      } finally {
+        setIsLoading(false)
       }
-    } catch (error) {
-      console.error("Error reading from localStorage:", error)
-    } finally {
-      setIsLoading(false)
     }
+
+    // Delay to ensure client-side hydration
+    const timer = setTimeout(checkAuth, 100)
+    return () => clearTimeout(timer)
   }, [])
 
   const login = (username: string, password: string, twoFactorCode: string): boolean => {
@@ -48,8 +56,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAuthenticated(true)
       setUser(userData)
       try {
-        localStorage.setItem("financeAppAuth", "true")
-        localStorage.setItem("financeAppUser", JSON.stringify(userData))
+        if (typeof window !== "undefined") {
+          localStorage.setItem("financeAppAuth", "true")
+          localStorage.setItem("financeAppUser", JSON.stringify(userData))
+        }
       } catch (error) {
         console.error("Error saving to localStorage:", error)
       }
@@ -63,7 +73,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const updatedUser = { ...user, ...updates }
       setUser(updatedUser)
       try {
-        localStorage.setItem("financeAppUser", JSON.stringify(updatedUser))
+        if (typeof window !== "undefined") {
+          localStorage.setItem("financeAppUser", JSON.stringify(updatedUser))
+        }
       } catch (error) {
         console.error("Error updating localStorage:", error)
       }
@@ -74,15 +86,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(false)
     setUser(null)
     try {
-      localStorage.removeItem("financeAppAuth")
-      localStorage.removeItem("financeAppUser")
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("financeAppAuth")
+        localStorage.removeItem("financeAppUser")
+      }
     } catch (error) {
       console.error("Error clearing localStorage:", error)
     }
   }
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Loading...</div>
+      </div>
+    )
   }
 
   return (
