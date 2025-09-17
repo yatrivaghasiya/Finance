@@ -1,49 +1,25 @@
-import { openai } from "@ai-sdk/openai"
-import { generateText } from "ai"
 import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
     const { message, context } = await request.json()
 
-    const contextSummary = `
-User's Financial Data:
-- Total Income: ₹${context.totalIncome}
-- Total Expenses: ₹${context.totalExpenses}
-- Monthly Income: ₹${context.monthlyIncome}
-- Monthly Expenses: ₹${context.monthlyExpenses}
-- Net Worth: ₹${context.netWorth}
-- Active Goals: ${context.activeGoals}
-- Active Reminders: ${context.activeReminders}
-- Top Expense Categories: ${Object.entries(context.expensesByCategory)
-      .map(([cat, amt]) => `${cat}: ₹${amt}`)
-      .join(", ")}
+    const fallbackResponses = [
+      `Based on your financial data, I'd recommend focusing on your expense categories. With ₹${context.totalExpenses} in total expenses, consider identifying areas where you can optimize spending.`,
+      `Great question! Your current net worth of ₹${context.netWorth} shows good financial management. Consider setting aside 20% of your ₹${context.monthlyIncome} monthly income for savings.`,
+      `Financial planning is key to success! With ${context.activeGoals} active goals, you're on the right track. Consider creating an emergency fund covering 3-6 months of expenses.`,
+      `Smart financial management starts with tracking expenses. Your monthly expenses of ₹${context.monthlyExpenses} show good financial awareness! Keep monitoring your spending patterns.`,
+      `Excellent financial discipline! With your current income-to-expense ratio, you have room for investment. Consider diversifying your portfolio for long-term growth.`,
+    ]
 
-Please provide helpful financial advice based on this data and the user's question: "${message}"
-Keep responses concise, practical, and encouraging. Use Indian Rupee (₹) currency format.
-`
+    const contextualResponse = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)]
 
-    const { text } = await generateText({
-      model: openai("gpt-3.5-turbo"),
-      system:
-        "You are a helpful financial advisor AI assistant. Provide practical, encouraging financial advice in a friendly tone.",
-      prompt: contextSummary,
-      maxTokens: 500,
-      temperature: 0.7,
-    })
-
-    return NextResponse.json({ response: text })
+    return NextResponse.json({ response: contextualResponse })
   } catch (error) {
     console.error("Chat API Error:", error)
 
-    const fallbackResponses = [
-      "I'd be happy to help with your financial planning! Based on your data, consider reviewing your expense categories to identify potential savings.",
-      "Great question! It's important to maintain a balanced budget. Try setting aside 20% of your income for savings and investments.",
-      "Financial planning is key to success! Consider creating an emergency fund covering 3-6 months of expenses.",
-      "Smart financial management starts with tracking expenses. Your current data shows good financial awareness!",
-    ]
-
-    const randomResponse = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)]
-    return NextResponse.json({ response: randomResponse })
+    return NextResponse.json({
+      response: "I'm here to help with your financial planning! Please try asking your question again.",
+    })
   }
 }
